@@ -51,15 +51,11 @@ updates:
       prefix: build
       include: scope
     groups:
-      # Direct dependencies separately from indirect ones. An indirect bump is
-      # almost always safe to merge unread; a direct one is worth a look, and
-      # mixing them means neither gets the attention it deserves.
-      go-direct:
-        dependency-type: direct
-        patterns:
-          - "*"
-      go-indirect:
-        dependency-type: indirect
+      # One group for the whole module. `dependency-type` inside a group only
+      # takes `production` or `development` — the `direct`/`indirect` values
+      # are for `allow`, and Go has no dev/prod split, so direct and indirect
+      # bumps cannot be separated into their own pull requests here.
+      go:
         patterns:
           - "*"
     labels:
