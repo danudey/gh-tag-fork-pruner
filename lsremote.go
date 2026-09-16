@@ -34,7 +34,7 @@ func lsRemoteTags(ctx context.Context, url string) ([]string, error) {
 	// --refs drops the peeled "^{}" entries that annotated tags would otherwise
 	// add, leaving one line per tag. "--" stops anything after it being taken
 	// as an option.
-	cmd := exec.CommandContext(ctx, "git", "ls-remote", "--tags", "--refs", "--", url)
+	cmd := exec.CommandContext(ctx, "git", "ls-remote", "--tags", "--refs", "--", url) // #nosec G204 -- argv, and url is rejected above if it could be an option
 
 	// ls-remote authenticates as git, not as gh, so a remote needing
 	// credentials we do not have must fail rather than block on a prompt.

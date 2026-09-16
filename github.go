@@ -31,6 +31,11 @@ func (cs *clientSet) forHost(host string) (*api.GraphQLClient, error) {
 	return c, nil
 }
 
+// repoVars is the owner/name variable pair every query in this file declares.
+func repoVars(repo repository.Repository) map[string]interface{} {
+	return map[string]interface{}{"owner": repo.Owner, "name": repo.Name}
+}
+
 // repoInfo is the subset of repository metadata needed to tell an original
 // repository apart from its forks.
 type repoInfo struct {
@@ -67,7 +72,7 @@ query RepoInfo($owner: String!, $name: String!) {
 			Parent           *struct{ NameWithOwner string }
 		}
 	}
-	vars := map[string]interface{}{"owner": repo.Owner, "name": repo.Name}
+	vars := repoVars(repo)
 	if err := client.Do(query, vars, &resp); err != nil {
 		return repoInfo{}, fmt.Errorf("could not look up %s/%s: %w", repo.Owner, repo.Name, err)
 	}
@@ -129,12 +134,9 @@ query RepoTags($owner: String!, $name: String!, $pageSize: Int!, $cursor: String
 				}
 			}
 		}
-		vars := map[string]interface{}{
-			"owner":    repo.Owner,
-			"name":     repo.Name,
-			"pageSize": tagPageSize,
-			"cursor":   cursor,
-		}
+		vars := repoVars(repo)
+		vars["pageSize"] = tagPageSize
+		vars["cursor"] = cursor
 		if err := client.Do(query, vars, &resp); err != nil {
 			return nil, fmt.Errorf("could not list tags for %s/%s: %w", repo.Owner, repo.Name, err)
 		}
@@ -209,7 +211,7 @@ func fetchRefIDs(cs *clientSet, repo repository.Repository, names []string, batc
 func buildRefIDQuery(repo repository.Repository, batch []string) (string, map[string]interface{}) {
 	var decls, fields strings.Builder
 	decls.WriteString("$owner: String!, $name: String!")
-	vars := map[string]interface{}{"owner": repo.Owner, "name": repo.Name}
+	vars := repoVars(repo)
 	for i, tag := range batch {
 		fmt.Fprintf(&decls, ", $q%d: String!", i)
 		fmt.Fprintf(&fields, "    t%d: ref(qualifiedName: $q%d) { id name }\n", i, i)

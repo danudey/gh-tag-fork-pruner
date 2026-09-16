@@ -86,11 +86,11 @@ func parseRemoteURL(raw string) (repository.Repository, error) {
 		if at := strings.LastIndex(rest, "@"); at >= 0 && !strings.Contains(rest[:at], "/") {
 			rest = rest[at+1:]
 		}
-		colon := strings.Index(rest, ":")
-		if colon < 0 {
+		var ok bool
+		host, path, ok = strings.Cut(rest, ":")
+		if !ok {
 			return repository.Repository{}, fmt.Errorf("unrecognized remote URL %q", raw)
 		}
-		host, path = rest[:colon], rest[colon+1:]
 	}
 
 	if h, _, err := net.SplitHostPort(host); err == nil {
@@ -122,9 +122,9 @@ func resolveDefaultRepo(remotes []gitRemote) (repository.Repository, *gitRemote,
 	var baseRemotes []gitRemote // gh-resolved = base
 	var named []gitRemote       // gh-resolved = OWNER/REPO
 	for _, r := range remotes {
-		switch {
-		case r.Resolved == "":
-		case r.Resolved == "base":
+		switch r.Resolved {
+		case "":
+		case "base":
 			baseRemotes = append(baseRemotes, r)
 		default:
 			named = append(named, r)

@@ -8,7 +8,16 @@ import (
 )
 
 func git(args ...string) (string, error) {
-	cmd := exec.Command("git", args...)
+	// The executable is the literal "git" and the arguments are an argv slice,
+	// so nothing here reaches a shell. Every caller builds args from literals
+	// or from values git itself reported.
+	//
+	// No context either: every command routed through here is a local, fast
+	// one — rev-parse, config, tag --list, remote get-url. The single git
+	// command that touches the network is ls-remote, which uses
+	// CommandContext with a timeout in lsremote.go.
+	// #nosec G204 -- argv, never a shell
+	cmd := exec.Command("git", args...) //nolint:noctx // local git only; see above
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
