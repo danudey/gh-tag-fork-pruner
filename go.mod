@@ -4,7 +4,7 @@ go 1.26.8
 
 require (
 	github.com/cli/go-gh/v2 v2.16.1
-	github.com/urfave/cli/v3 v3.12.0
+	github.com/urfave/cli/v3 v3.13.0
 )
 
 require (
